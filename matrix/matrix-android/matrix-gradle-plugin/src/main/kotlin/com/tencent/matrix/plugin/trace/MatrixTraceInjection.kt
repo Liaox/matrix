@@ -26,7 +26,7 @@ import com.tencent.matrix.plugin.compat.CreationConfig
 import com.tencent.matrix.plugin.compat.CreationConfig.Companion.getCodeShrinker
 import com.tencent.matrix.plugin.task.BaseCreationAction
 import com.tencent.matrix.plugin.task.MatrixTraceTask
-import com.tencent.matrix.plugin.transform.MatrixTraceTransform
+//import com.tencent.matrix.plugin.transform.MatrixTraceTransform
 import com.tencent.matrix.trace.extension.ITraceSwitchListener
 import com.tencent.matrix.trace.extension.MatrixTraceExtension
 import org.gradle.api.Project
@@ -47,7 +47,7 @@ class MatrixTraceInjection : ITraceSwitchListener {
     fun inject(appExtension: AppExtension,
                project: Project,
                extension: MatrixTraceExtension) {
-        injectTransparentTransform(appExtension, project, extension)
+//        injectTransparentTransform(appExtension, project, extension)
         project.afterEvaluate {
             if (extension.isEnable) {
                 doInjection(appExtension, project, extension)
@@ -55,27 +55,27 @@ class MatrixTraceInjection : ITraceSwitchListener {
         }
     }
 
-    private var transparentTransform: MatrixTraceTransform? = null
+//    private var transparentTransform: MatrixTraceTransform? = null
 
     private fun injectTransparentTransform(appExtension: AppExtension,
                                            project: Project,
                                            extension: MatrixTraceExtension) {
 
-        transparentTransform = MatrixTraceTransform(project, extension)
-        appExtension.registerTransform(transparentTransform!!)
+//        transparentTransform = MatrixTraceTransform(project, extension)
+//        appExtension.registerTransform(transparentTransform!!)
     }
     
     private fun doInjection(appExtension: AppExtension,
                             project: Project,
                             extension: MatrixTraceExtension) {
         appExtension.applicationVariants.all { variant ->
-            if (injectTaskOrTransform(project, extension, variant) == InjectionMode.TransformInjection) {
-                // Inject transform
-                transformInjection()
-            } else {
+//            if (injectTaskOrTransform(project, extension, variant) == InjectionMode.TransformInjection) {
+//                // Inject transform
+//                transformInjection()
+//            } else {
                 // Inject task
                 taskInjection(project, extension, variant)
-            }
+//            }
         }
     }
 
@@ -125,7 +125,7 @@ class MatrixTraceInjection : ITraceSwitchListener {
 
         Log.i(TAG, "Using trace transform mode.")
 
-        transparentTransform!!.enable()
+//        transparentTransform!!.enable()
     }
 
     enum class InjectionMode {

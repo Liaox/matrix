@@ -18,7 +18,6 @@ package com.tencent.matrix.plugin.task
 
 import com.android.build.gradle.api.BaseVariant
 import com.android.builder.model.SigningConfig
-import com.android.utils.FileUtils
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.tencent.matrix.javalib.util.Log
@@ -33,6 +32,7 @@ import com.tencent.matrix.shrinker.ProguardStringBuilder
 import com.tencent.mm.arscutil.ArscUtil
 import com.tencent.mm.arscutil.io.ArscReader
 import com.tencent.mm.arscutil.io.ArscWriter
+import org.apache.commons.io.FileUtils
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -194,7 +194,7 @@ abstract class RemoveUnusedResourcesTaskV2 : DefaultTask() {
                 val arsc = zipInputFile.getEntry(ARSC_FILE_NAME)
 
                 val unzipDir = File(fromOriginalApkFile.parentFile.canonicalPath + File.separator + fromOriginalApkFile.name.substring(0, fromOriginalApkFile.name.lastIndexOf(".")) + "_unzip")
-                FileUtils.deleteRecursivelyIfExists(unzipDir)
+                unzipDir.deleteRecursivelyIfExists()
                 unzipDir.mkdir()
 
                 val srcArscFile = File(unzipDir, ARSC_FILE_NAME)
@@ -327,7 +327,7 @@ abstract class RemoveUnusedResourcesTaskV2 : DefaultTask() {
                     if (compressedEntry.isNotEmpty()) {
                         Log.d(TAG, "7zip %d DEFLATED files to apk", compressedEntry.size)
                         val deflateDir = File(fromOriginalApkFile.parentFile, fromOriginalApkFile.name.substring(0, fromOriginalApkFile.name.lastIndexOf(".")) + "_deflated")
-                        FileUtils.deleteRecursivelyIfExists(deflateDir)
+                        deflateDir.deleteRecursivelyIfExists()
                         deflateDir.mkdir()
                         for (compress in compressedEntry) {
                             val entry = compress.substring(unzipDir.canonicalPath.length + 1)
@@ -337,14 +337,14 @@ abstract class RemoveUnusedResourcesTaskV2 : DefaultTask() {
                             FileUtils.copyFile(File(compress), deflateFile)
                         }
                         ApkUtil.sevenZipFile(pathOfSevenZip, deflateDir.canonicalPath + "${File.separator}*", toShrunkApkFile.canonicalPath, true)
-                        FileUtils.deleteRecursivelyIfExists(deflateDir)
+                        deflateDir.deleteRecursivelyIfExists()
                     }
                 } else {
                     zipOutputStream = ZipOutputStream(FileOutputStream(toShrunkApkFile))
                     zipFile(zipOutputStream, unzipDir, unzipDir.canonicalPath, compressedEntry)
                 }
 
-                FileUtils.deleteRecursivelyIfExists(unzipDir)
+                unzipDir.deleteRecursivelyIfExists()
 
                 Log.i(TAG, "shrink apk size %f KB", (fromOriginalApkFile.length() - toShrunkApkFile.length()) / 1024.0)
                 return true
@@ -355,6 +355,16 @@ abstract class RemoveUnusedResourcesTaskV2 : DefaultTask() {
         } catch (e: Exception) {
             Log.printErrStackTrace(TAG, e, "remove unused resources occur error!")
             return false
+        }
+    }
+
+    fun File.deleteRecursivelyIfExists() {
+        if (this.exists()) {
+            if (this.isDirectory) {
+                this.deleteRecursively() // 递归删除目录及其所有内容
+            } else {
+                this.delete() // 删除文件
+            }
         }
     }
 

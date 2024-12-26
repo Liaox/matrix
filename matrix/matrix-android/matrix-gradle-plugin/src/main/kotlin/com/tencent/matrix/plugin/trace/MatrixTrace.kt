@@ -17,8 +17,6 @@
 package com.tencent.matrix.plugin.trace
 
 import com.android.build.api.transform.Status
-import com.android.utils.FileUtils
-import com.google.common.hash.Hashing
 import com.tencent.matrix.javalib.util.IOUtil
 import com.tencent.matrix.javalib.util.Log
 import com.tencent.matrix.javalib.util.Util
@@ -26,16 +24,19 @@ import com.tencent.matrix.trace.*
 import com.tencent.matrix.trace.item.TraceMethod
 import com.tencent.matrix.trace.retrace.MappingCollector
 import com.tencent.matrix.trace.retrace.MappingReader
+import org.apache.commons.io.FileUtils
 import org.gradle.api.Project
 import java.io.File
+import java.nio.charset.Charset
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
+
 
 class MatrixTrace(
         private val ignoreMethodMapFilePath: String,
@@ -51,7 +52,7 @@ class MatrixTrace(
         @Suppress("DEPRECATION")
         fun getUniqueJarName(jarFile: File): String {
             val origJarName = jarFile.name
-            val hashing = Hashing.sha1().hashString(jarFile.path, Charsets.UTF_16LE).toString()
+            val hashing = sha1(jarFile.path, Charsets.UTF_16LE)
             val dotPos = origJarName.lastIndexOf('.')
             return if (dotPos < 0) {
                 String.format("%s_%s", origJarName, hashing)
@@ -74,6 +75,24 @@ class MatrixTrace(
             }
         }
 
+        private fun sha1(input: String, charset: Charset?): String {
+            try {
+                val digest = MessageDigest.getInstance("SHA-1")
+                val hashBytes = digest.digest(input.toByteArray(charset!!))
+                // Convert the hash bytes to a hexadecimal string
+                val hexString = StringBuilder()
+                for (b in hashBytes) {
+                    val hex = Integer.toHexString(0xff and b.toInt())
+                    if (hex.length == 1) {
+                        hexString.append('0')
+                    }
+                    hexString.append(hex)
+                }
+                return hexString.toString()
+            } catch (e: NoSuchAlgorithmException) {
+                throw IllegalStateException("SHA-1 algorithm not available", e)
+            }
+        }
     }
 
     fun doTransform(classInputs: Collection<File>,
@@ -298,7 +317,7 @@ class MatrixTrace(
 
             if (!dirInput.exists() && dirOutput.exists()) {
                 if (dirOutput.isDirectory) {
-                    FileUtils.deletePath(dirOutput)
+                    FileUtils.deleteDirectory(dirOutput)
                 } else {
                     FileUtils.delete(dirOutput)
                 }

@@ -19,7 +19,7 @@ package com.tencent.matrix.plugin.compat
 import com.android.build.gradle.AppExtension
 import com.tencent.matrix.javalib.util.Log
 import com.tencent.matrix.plugin.trace.MatrixTraceInjection
-import com.tencent.matrix.plugin.transform.MatrixTraceLegacyTransform
+//import com.tencent.matrix.plugin.transform.MatrixTraceLegacyTransform
 import com.tencent.matrix.trace.extension.ITraceSwitchListener
 import com.tencent.matrix.trace.extension.MatrixTraceExtension
 import org.gradle.api.Project
@@ -72,7 +72,7 @@ class MatrixTraceCompat : ITraceSwitchListener {
             }
 
             appExtension.applicationVariants.all {
-                MatrixTraceLegacyTransform.inject(extension, project, it)
+//                MatrixTraceLegacyTransform.inject(extension, project, it)
             }
         }
     }

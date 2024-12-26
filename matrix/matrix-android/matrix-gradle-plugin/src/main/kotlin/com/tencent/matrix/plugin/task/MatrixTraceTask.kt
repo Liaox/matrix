@@ -18,8 +18,6 @@ package com.tencent.matrix.plugin.task
 
 import com.android.build.api.transform.Status
 import com.android.build.gradle.internal.tasks.DexArchiveBuilderTask
-import com.android.builder.model.AndroidProject.FD_OUTPUTS
-import com.google.common.base.Joiner
 import com.tencent.matrix.javalib.util.Log
 import com.tencent.matrix.plugin.compat.CreationConfig
 import com.tencent.matrix.plugin.trace.MatrixTrace
@@ -32,11 +30,11 @@ import org.gradle.api.file.FileType
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
+import org.gradle.internal.impldep.com.google.common.base.Joiner
 import org.gradle.work.ChangeType
 import org.gradle.work.Incremental
 import org.gradle.work.InputChanges
 import java.io.File
-import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutionException
 
@@ -47,9 +45,10 @@ abstract class MatrixTraceTask : DefaultTask() {
         fun getTraceClassOut(project: Project, creationConfig: CreationConfig): String {
 
             val variantDirName = creationConfig.variant.dirName
+            val outPuts = creationConfig.variant.outputs.first()?.outputFile?:"outputs"
             return Joiner.on(File.separatorChar).join(
                 project.buildDir,
-                FD_OUTPUTS,
+                outPuts,
                 "traceClassOut",
                 variantDirName)
         }
@@ -175,10 +174,10 @@ abstract class MatrixTraceTask : DefaultTask() {
 
             val project = creationConfig.project
             val variantDirName = creationConfig.variant.dirName
-
+            val outPuts = creationConfig.variant.outputs.first()?.outputFile?:"outputs"
             val mappingOut = Joiner.on(File.separatorChar).join(
                     project.buildDir,
-                    FD_OUTPUTS,
+                    outPuts,
                     "mapping",
                     variantDirName)
 

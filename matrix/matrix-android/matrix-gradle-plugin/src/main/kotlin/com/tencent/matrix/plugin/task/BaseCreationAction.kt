@@ -15,12 +15,11 @@
  */
 
 package com.tencent.matrix.plugin.task
-
-import com.android.utils.appendCapitalized
 import com.tencent.matrix.plugin.compat.CreationConfig
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
+import java.util.Locale
 
 interface ICreationAction<TaskT> {
     val name: String
@@ -33,11 +32,18 @@ abstract class BaseCreationAction<TaskT>(
 
     companion object {
         @JvmField
-        val computeTaskName = { prefix: String, name: String, suffix: String
-            ->
+        val computeTaskName = { prefix: String, name: String, suffix: String ->
+            fun String.appendCapitalized(vararg parts: String): String {
+                return parts.fold(this) { acc, part ->
+                    acc + capitalizeFirstLetter(part)
+                }
+            }
             prefix.appendCapitalized(name, suffix)
         }
-
+        private fun capitalizeFirstLetter(input: String): String {
+            if (input.isEmpty()) return input
+            return input[0].toString().toUpperCase(Locale.getDefault()) + input.substring(1)
+        }
         fun findNamedTask(taskContainer: TaskContainer, name: String): TaskProvider<Task>? {
             try {
                 return taskContainer.named(name)

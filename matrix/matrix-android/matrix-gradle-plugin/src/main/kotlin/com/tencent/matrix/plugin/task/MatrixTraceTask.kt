@@ -21,6 +21,8 @@ import com.android.build.gradle.internal.tasks.DexArchiveBuilderTask
 import com.tencent.matrix.javalib.util.Log
 import com.tencent.matrix.plugin.compat.CreationConfig
 import com.tencent.matrix.plugin.trace.MatrixTrace
+import com.tencent.matrix.plugin.trace.MatrixTraceInjection
+import com.tencent.matrix.plugin.trace.MatrixTraceInjection.Companion
 import com.tencent.matrix.trace.extension.MatrixTraceExtension
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
@@ -45,12 +47,13 @@ abstract class MatrixTraceTask : DefaultTask() {
         fun getTraceClassOut(project: Project, creationConfig: CreationConfig): String {
 
             val variantDirName = creationConfig.variant.dirName
-            val outPuts = creationConfig.variant.outputs.first()?.outputFile?:"outputs"
-            return Joiner.on(File.separatorChar).join(
-                project.buildDir,
-                outPuts,
-                "traceClassOut",
-                variantDirName)
+            val outPuts = "outputs"
+            return project.buildDir.absolutePath+File.separatorChar+outPuts+File.separatorChar+"traceClassOut"+File.separatorChar+variantDirName
+//            return Joiner.on(File.separatorChar).join(
+//                project.buildDir,
+//                outPuts,
+//                "traceClassOut",
+//                variantDirName)
         }
     }
 
@@ -174,15 +177,11 @@ abstract class MatrixTraceTask : DefaultTask() {
 
             val project = creationConfig.project
             val variantDirName = creationConfig.variant.dirName
-            val outPuts = creationConfig.variant.outputs.first()?.outputFile?:"outputs"
-            val mappingOut = Joiner.on(File.separatorChar).join(
-                    project.buildDir,
-                    outPuts,
-                    "mapping",
-                    variantDirName)
+            val outPuts = "outputs"
+//            Log.i("Action", "outPuts:${creationConfig.variant.outputs.first().outputFile.parent}")
+            val mappingOut = project.buildDir.absolutePath+File.separatorChar+outPuts+File.separatorChar+"mapping"+File.separatorChar+variantDirName
 
             val traceClassOut = getTraceClassOut(project, creationConfig)
-
             // Input properties
             val baseMethodMapFile = File(extension.baseMethodMapFile)
             if (baseMethodMapFile.exists()) {
@@ -195,10 +194,10 @@ abstract class MatrixTraceTask : DefaultTask() {
             task.mappingDir.set(mappingOut)
             task.traceClassOutputDirectory.set(traceClassOut)
             task.skipCheckClass.set(extension.isSkipCheckClass)
-
             // Output properties
             task.ignoreMethodMapFileOutput.set(File("$mappingOut/ignoreMethodMapping.txt"))
             task.methodMapFileOutput.set(File("$mappingOut/methodMapping.txt"))
+
         }
     }
 
